@@ -10,7 +10,7 @@ import (
 	"github.com/danielgtaylor/huma/v2/humacli"
 	"github.com/jithui555/goatnd/app/routes/public/auth"
 	"github.com/jithui555/goatnd/models"
-	"github.com/jithui555/goatnd/pkgs/db"
+	"github.com/jithui555/goatnd/pkg/db"
 	"golang.org/x/crypto/bcrypt"
 
 	_ "github.com/danielgtaylor/huma/v2/formats/cbor"

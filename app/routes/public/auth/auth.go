@@ -7,8 +7,8 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/jithui555/goatnd/models"
+	"github.com/jithui555/goatnd/pkg/db"
 	"github.com/jithui555/goatnd/pkg/token"
-	"github.com/jithui555/goatnd/pkgs/db"
 	"golang.org/x/crypto/bcrypt"
 )
 
