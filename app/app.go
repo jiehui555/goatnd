@@ -8,6 +8,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
 	"github.com/danielgtaylor/huma/v2/humacli"
+	"github.com/jithui555/goatnd/app/routes/public/auth"
 	"github.com/jithui555/goatnd/models"
 	"github.com/jithui555/goatnd/pkgs/db"
 	"golang.org/x/crypto/bcrypt"
@@ -44,6 +45,9 @@ func Run() {
 		// 创建新的路由器和 API
 		router := http.NewServeMux()
 		api := humago.New(router, huma.DefaultConfig("我的 API", "1.0.0"))
+
+		// 注册客户端路由
+		auth.RegisterAuthRoutes(api)
 
 		// 注册 GET /greeting/{name}
 		huma.Register(api, huma.Operation{
