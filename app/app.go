@@ -75,7 +75,6 @@ func Run() {
 			Summary:       "提交评论",
 			Tags:          []string{"评论"},
 			DefaultStatus: http.StatusCreated,
-			Middlewares:   huma.Middlewares{AuthMiddleware(api)},
 		}, func(ctx context.Context, i *ReviewInput) (*struct{}, error) {
 			// TODO: 将评论保存到数据存储中。
 			return nil, nil

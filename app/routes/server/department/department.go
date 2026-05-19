@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/jithui555/goatnd/app/routes"
 )
 
 func RegisterRoutes(api huma.API) {
@@ -14,6 +15,7 @@ func RegisterRoutes(api huma.API) {
 		Path:        "/server/department/create",
 		Summary:     "部门-创建",
 		Tags:        []string{"部门"},
+		Middlewares: huma.Middlewares{routes.AuthMiddleware(api), routes.AdminMiddleware(api)},
 	}, handlerCreateLogic)
 
 	// 更新部门接口
@@ -23,6 +25,7 @@ func RegisterRoutes(api huma.API) {
 		Path:        "/server/department/update/{id}",
 		Summary:     "部门-更新",
 		Tags:        []string{"部门"},
+		Middlewares: huma.Middlewares{routes.AuthMiddleware(api), routes.AdminMiddleware(api)},
 	}, handlerUpdateLogic)
 
 	// 删除部门接口
@@ -32,6 +35,7 @@ func RegisterRoutes(api huma.API) {
 		Path:        "/server/department/delete/{id}",
 		Summary:     "部门-删除",
 		Tags:        []string{"部门"},
+		Middlewares: huma.Middlewares{routes.AuthMiddleware(api), routes.AdminMiddleware(api)},
 	}, handleDeleteLogic)
 
 	// 搜索部门接口
@@ -41,5 +45,6 @@ func RegisterRoutes(api huma.API) {
 		Path:        "/server/department/search",
 		Summary:     "部门-搜索",
 		Tags:        []string{"部门"},
+		Middlewares: huma.Middlewares{routes.AuthMiddleware(api), routes.AdminMiddleware(api)},
 	}, handleSearchLogic)
 }

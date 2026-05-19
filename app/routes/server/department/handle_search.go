@@ -3,6 +3,7 @@ package department
 import (
 	"context"
 
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/jithui555/goatnd/models"
 	"github.com/jithui555/goatnd/pkg/db"
 )
@@ -29,7 +30,7 @@ func handleSearchLogic(ctx context.Context, i *searchInput) (*searchOutput, erro
 	}
 
 	if err := query.Find(&depts).Error; err != nil {
-		return nil, err
+		return nil, huma.Error500InternalServerError(err.Error())
 	}
 
 	resp := &searchOutput{}

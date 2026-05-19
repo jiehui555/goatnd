@@ -2,8 +2,8 @@ package department
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/jithui555/goatnd/models"
 	"github.com/jithui555/goatnd/pkg/db"
 )
@@ -29,7 +29,7 @@ func handlerCreateLogic(ctx context.Context, i *createInput) (*createOutput, err
 	var count int64
 	database.Model(&models.Department{}).Where("name = ?", i.Body.Name).Count(&count)
 	if count > 0 {
-		return nil, fmt.Errorf("部门名称已存在")
+		return nil, huma.Error400BadRequest("部门名称已存在")
 	}
 
 	dept := models.Department{
@@ -37,7 +37,7 @@ func handlerCreateLogic(ctx context.Context, i *createInput) (*createOutput, err
 	}
 
 	if err := database.Create(&dept).Error; err != nil {
-		return nil, err
+		return nil, huma.Error500InternalServerError(err.Error())
 	}
 
 	resp := &createOutput{}

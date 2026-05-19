@@ -2,8 +2,8 @@ package department
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/jithui555/goatnd/models"
 	"github.com/jithui555/goatnd/pkg/db"
 )
@@ -24,11 +24,11 @@ func handleDeleteLogic(ctx context.Context, i *deleteInput) (*deleteOutput, erro
 
 	var dept models.Department
 	if err := database.First(&dept, i.ID).Error; err != nil {
-		return nil, fmt.Errorf("未找到部门")
+		return nil, huma.Error404NotFound("未找到部门")
 	}
 
 	if err := database.Delete(&dept).Error; err != nil {
-		return nil, err
+		return nil, huma.Error500InternalServerError(err.Error())
 	}
 
 	resp := &deleteOutput{}

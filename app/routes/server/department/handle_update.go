@@ -2,8 +2,8 @@ package department
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/jithui555/goatnd/models"
 	"github.com/jithui555/goatnd/pkg/db"
 )
@@ -27,7 +27,7 @@ func handlerUpdateLogic(ctx context.Context, i *updateInput) (*updateOutput, err
 
 	var dept models.Department
 	if err := database.First(&dept, i.ID).Error; err != nil {
-		return nil, fmt.Errorf("未找到部门")
+		return nil, huma.Error404NotFound("未找到部门")
 	}
 
 	// 检查名称唯一性 (如果名称改变了)
@@ -35,13 +35,13 @@ func handlerUpdateLogic(ctx context.Context, i *updateInput) (*updateOutput, err
 		var count int64
 		database.Model(&models.Department{}).Where("name = ? AND id != ?", i.Body.Name, i.ID).Count(&count)
 		if count > 0 {
-			return nil, fmt.Errorf("部门名称已存在")
+			return nil, huma.Error400BadRequest("部门名称已存在")
 		}
 		dept.Name = i.Body.Name
 	}
 
 	if err := database.Save(&dept).Error; err != nil {
-		return nil, err
+		return nil, huma.Error500InternalServerError(err.Error())
 	}
 
 	resp := &updateOutput{}
