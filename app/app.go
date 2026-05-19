@@ -8,7 +8,8 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
 	"github.com/danielgtaylor/huma/v2/humacli"
-	"github.com/jithui555/goatnd/app/routes/public/auth"
+	"github.com/jithui555/goatnd/app/routes/public"
+	"github.com/jithui555/goatnd/app/routes/server"
 	"github.com/jithui555/goatnd/models"
 	"github.com/jithui555/goatnd/pkg/db"
 	"golang.org/x/crypto/bcrypt"
@@ -46,8 +47,9 @@ func Run() {
 		router := http.NewServeMux()
 		api := humago.New(router, huma.DefaultConfig("我的 API", "1.0.0"))
 
-		// 注册客户端路由
-		auth.RegisterAuthRoutes(api)
+		// 注册路由表
+		public.RegisterRoutes(api)
+		server.RegisterRoutes(api)
 
 		// 注册 GET /greeting/{name}
 		huma.Register(api, huma.Operation{
@@ -86,7 +88,7 @@ func Run() {
 		}
 
 		// 执行数据库迁移
-		err = database.AutoMigrate(&models.User{})
+		err = database.AutoMigrate(&models.User{}, &models.Department{})
 		if err != nil {
 			panic(fmt.Sprintf("数据库迁移失败: %v", err))
 		}

@@ -6,8 +6,8 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 )
 
-// RegisterAuthRoutes 注册认证相关的公共路由
-func RegisterAuthRoutes(api huma.API) {
+// RegisterRoutes 注册认证相关的公共路由
+func RegisterRoutes(api huma.API) {
 	// 登录接口
 	huma.Register(api, huma.Operation{
 		OperationID: "auth-login",
