@@ -11,8 +11,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// ChangePasswordInput 修改密码请求输入
-type ChangePasswordInput struct {
+// changePasswordInput 修改密码请求输入
+type changePasswordInput struct {
 	Auth string `header:"Authorization" required:"true"`
 	Body struct {
 		OldPassword string `json:"old_password" minLength:"1" doc:"旧密码"`
@@ -20,15 +20,15 @@ type ChangePasswordInput struct {
 	}
 }
 
-// ChangePasswordOutput 修改密码响应输出
-type ChangePasswordOutput struct {
+// changePasswordOutput 修改密码响应输出
+type changePasswordOutput struct {
 	Body struct {
 		Message string `json:"message" example:"OK" doc:"提示信息"`
 	}
 }
 
 // handleChangePasswordLogic 处理更改密码的逻辑
-func handleChangePasswordLogic(ctx context.Context, i *ChangePasswordInput) (*ChangePasswordOutput, error) {
+func handleChangePasswordLogic(ctx context.Context, i *changePasswordInput) (*changePasswordOutput, error) {
 	authHeader := i.Auth
 	if !strings.HasPrefix(authHeader, "Bearer ") {
 		return nil, huma.Error400BadRequest("无效的授权格式")
@@ -59,7 +59,7 @@ func handleChangePasswordLogic(ctx context.Context, i *ChangePasswordInput) (*Ch
 		return nil, huma.Error500InternalServerError("更新密码失败")
 	}
 
-	resp := &ChangePasswordOutput{}
+	resp := &changePasswordOutput{}
 	resp.Body.Message = "修改密码成功"
 	return resp, nil
 }

@@ -10,16 +10,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// LoginInput 登录请求输入
-type LoginInput struct {
+// loginInput 登录请求输入
+type loginInput struct {
 	Body struct {
 		Email    string `json:"email" minLength:"1" doc:"邮箱"`
 		Password string `json:"password" minLength:"8" maxLength:"32" doc:"密码"`
 	}
 }
 
-// LoginOutput 登录响应输出
-type LoginOutput struct {
+// loginOutput 登录响应输出
+type loginOutput struct {
 	Body struct {
 		Message string `json:"message" example:"OK" doc:"提示信息"`
 		Token   string `json:"token" doc:"JWT Token"`
@@ -27,7 +27,7 @@ type LoginOutput struct {
 }
 
 // handlerLoginLogic 处理登录的逻辑
-func handlerLoginLogic(ctx context.Context, i *LoginInput) (*LoginOutput, error) {
+func handlerLoginLogic(ctx context.Context, i *loginInput) (*loginOutput, error) {
 	var user models.User
 	database := db.GetDB()
 	if err := database.Where("email = ?", i.Body.Email).First(&user).Error; err != nil {
@@ -43,7 +43,7 @@ func handlerLoginLogic(ctx context.Context, i *LoginInput) (*LoginOutput, error)
 		return nil, huma.Error500InternalServerError("生成 token 失败")
 	}
 
-	resp := &LoginOutput{}
+	resp := &loginOutput{}
 	resp.Body.Message = "登录成功"
 	resp.Body.Token = t
 	return resp, nil

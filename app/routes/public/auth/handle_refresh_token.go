@@ -10,13 +10,13 @@ import (
 	"github.com/jithui555/goatnd/pkg/token"
 )
 
-// RefreshInput 刷新 Token 请求输入
-type RefreshInput struct {
+// refreshInput 刷新 Token 请求输入
+type refreshInput struct {
 	Auth string `header:"Authorization" required:"true"`
 }
 
-// RefreshOutput 刷新 Token 响应输出
-type RefreshOutput struct {
+// refreshOutput 刷新 Token 响应输出
+type refreshOutput struct {
 	Body struct {
 		Message string `json:"message" example:"OK" doc:"提示信息"`
 		Token   string `json:"token" doc:"JWT Token"`
@@ -24,7 +24,7 @@ type RefreshOutput struct {
 }
 
 // handleRefreshTokenLogic 处理刷新 Token 的逻辑
-func handleRefreshTokenLogic(ctx context.Context, i *RefreshInput) (*RefreshOutput, error) {
+func handleRefreshTokenLogic(ctx context.Context, i *refreshInput) (*refreshOutput, error) {
 	authHeader := i.Auth
 	if !strings.HasPrefix(authHeader, "Bearer ") {
 		return nil, huma.Error400BadRequest("无效的授权格式")
@@ -48,7 +48,7 @@ func handleRefreshTokenLogic(ctx context.Context, i *RefreshInput) (*RefreshOutp
 		return nil, huma.Error500InternalServerError("刷新 token 失败")
 	}
 
-	resp := &RefreshOutput{}
+	resp := &refreshOutput{}
 	resp.Body.Message = "刷新成功"
 	resp.Body.Token = newToken
 	return resp, nil
