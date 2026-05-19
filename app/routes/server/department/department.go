@@ -14,7 +14,7 @@ func RegisterRoutes(api huma.API) {
 		Method:      http.MethodPost,
 		Path:        "/server/department/create",
 		Summary:     "部门-创建",
-		Tags:        []string{"部门"},
+		Tags:        []string{"服务端"},
 		Middlewares: huma.Middlewares{routes.AuthMiddleware(api), routes.AdminMiddleware(api)},
 	}, handlerCreateLogic)
 
@@ -24,7 +24,7 @@ func RegisterRoutes(api huma.API) {
 		Method:      http.MethodPut,
 		Path:        "/server/department/update/{id}",
 		Summary:     "部门-更新",
-		Tags:        []string{"部门"},
+		Tags:        []string{"服务端"},
 		Middlewares: huma.Middlewares{routes.AuthMiddleware(api), routes.AdminMiddleware(api)},
 	}, handlerUpdateLogic)
 
@@ -34,7 +34,7 @@ func RegisterRoutes(api huma.API) {
 		Method:      http.MethodDelete,
 		Path:        "/server/department/delete/{id}",
 		Summary:     "部门-删除",
-		Tags:        []string{"部门"},
+		Tags:        []string{"服务端"},
 		Middlewares: huma.Middlewares{routes.AuthMiddleware(api), routes.AdminMiddleware(api)},
 	}, handleDeleteLogic)
 
@@ -44,7 +44,7 @@ func RegisterRoutes(api huma.API) {
 		Method:      http.MethodGet,
 		Path:        "/server/department/search",
 		Summary:     "部门-搜索",
-		Tags:        []string{"部门"},
+		Tags:        []string{"服务端"},
 		Middlewares: huma.Middlewares{routes.AuthMiddleware(api), routes.AdminMiddleware(api)},
 	}, handleSearchLogic)
 }

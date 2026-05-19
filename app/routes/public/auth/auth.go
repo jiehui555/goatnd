@@ -13,7 +13,7 @@ func RegisterRoutes(api huma.API) {
 		OperationID: "auth-login",
 		Method:      http.MethodPost,
 		Path:        "/auth/login",
-		Summary:     "登录",
+		Summary:     "获取 token",
 		Tags:        []string{"公共"},
 	}, handlerLoginLogic)
 

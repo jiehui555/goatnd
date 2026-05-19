@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -50,35 +49,6 @@ func Run() {
 		// 注册路由表
 		public.RegisterRoutes(api)
 		server.RegisterRoutes(api)
-
-		// 注册 GET /greeting/{name}
-		huma.Register(api, huma.Operation{
-			OperationID: "get-greeting",
-			Method:      http.MethodGet,
-			Path:        "/greeting/{name}",
-			Summary:     "获取问候语",
-			Description: "根据姓名获取问候语。",
-			Tags:        []string{"问候"},
-		}, func(ctx context.Context, input *struct {
-			Name string `path:"name" maxLength:"30" example:"world" doc:"要问候的名字"`
-		}) (*GreetingOutput, error) {
-			resp := &GreetingOutput{}
-			resp.Body.Message = fmt.Sprintf("Hello, %s!", input.Name)
-			return resp, nil
-		})
-
-		// 注册 POST /reviews
-		huma.Register(api, huma.Operation{
-			OperationID:   "post-review",
-			Method:        http.MethodPost,
-			Path:          "/reviews",
-			Summary:       "提交评论",
-			Tags:          []string{"评论"},
-			DefaultStatus: http.StatusCreated,
-		}, func(ctx context.Context, i *ReviewInput) (*struct{}, error) {
-			// TODO: 将评论保存到数据存储中。
-			return nil, nil
-		})
 
 		// 初始化数据库
 		database, err := db.InitDB(options.DBPath)
