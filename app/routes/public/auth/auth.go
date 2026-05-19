@@ -1,61 +1,10 @@
 package auth
 
 import (
-	"context"
 	"net/http"
-	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/jithui555/goatnd/models"
-	"github.com/jithui555/goatnd/pkg/db"
-	"github.com/jithui555/goatnd/pkg/token"
-	"golang.org/x/crypto/bcrypt"
 )
-
-// LoginInput 登录请求输入
-type LoginInput struct {
-	Body struct {
-		Email    string `json:"email" minLength:"1" doc:"邮箱"`
-		Password string `json:"password" minLength:"8" maxLength:"32" doc:"密码"`
-	}
-}
-
-// LoginOutput 登录响应输出
-type LoginOutput struct {
-	Body struct {
-		Message string `json:"message" example:"OK" doc:"提示信息"`
-		Token   string `json:"token" doc:"JWT Token"`
-	}
-}
-
-// RefreshInput 刷新 Token 请求输入
-type RefreshInput struct {
-	Auth string `header:"Authorization" required:"true"`
-}
-
-// RefreshOutput 刷新 Token 响应输出
-type RefreshOutput struct {
-	Body struct {
-		Message string `json:"message" example:"OK" doc:"提示信息"`
-		Token   string `json:"token" doc:"JWT Token"`
-	}
-}
-
-// ChangePasswordInput 修改密码请求输入
-type ChangePasswordInput struct {
-	Auth string `header:"Authorization" required:"true"`
-	Body struct {
-		OldPassword string `json:"old_password" minLength:"1" doc:"旧密码"`
-		NewPassword string `json:"new_password" minLength:"8" maxLength:"32" doc:"新密码"`
-	}
-}
-
-// ChangePasswordOutput 修改密码响应输出
-type ChangePasswordOutput struct {
-	Body struct {
-		Message string `json:"message" example:"OK" doc:"提示信息"`
-	}
-}
 
 // RegisterAuthRoutes 注册认证相关的公共路由
 func RegisterAuthRoutes(api huma.API) {
@@ -66,27 +15,7 @@ func RegisterAuthRoutes(api huma.API) {
 		Path:        "/auth/login",
 		Summary:     "登录",
 		Tags:        []string{"公共"},
-	}, func(ctx context.Context, i *LoginInput) (*LoginOutput, error) {
-		var user models.User
-		database := db.GetDB()
-		if err := database.Where("email = ?", i.Body.Email).First(&user).Error; err != nil {
-			return nil, huma.Error401Unauthorized("用户不存在或密码错误")
-		}
-
-		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(i.Body.Password)); err != nil {
-			return nil, huma.Error401Unauthorized("用户不存在或密码错误")
-		}
-
-		t, err := token.GenerateToken(user.ID)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("生成 token 失败")
-		}
-
-		resp := &LoginOutput{}
-		resp.Body.Message = "登录成功"
-		resp.Body.Token = t
-		return resp, nil
-	})
+	}, handlerLoginLogic)
 
 	// 刷新 Token 接口
 	huma.Register(api, huma.Operation{
@@ -95,35 +24,7 @@ func RegisterAuthRoutes(api huma.API) {
 		Path:        "/auth/refresh",
 		Summary:     "刷新 token",
 		Tags:        []string{"公共"},
-	}, func(ctx context.Context, i *RefreshInput) (*RefreshOutput, error) {
-		authHeader := i.Auth
-		if !strings.HasPrefix(authHeader, "Bearer ") {
-			return nil, huma.Error400BadRequest("无效的授权格式")
-		}
-		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-
-		claims, err := token.ValidateToken(tokenStr)
-		if err != nil {
-			return nil, huma.Error401Unauthorized("无效的 token")
-		}
-
-		// Verify user still exists
-		database := db.GetDB()
-		var user models.User
-		if err := database.First(&user, claims.UserID).Error; err != nil {
-			return nil, huma.Error401Unauthorized("用户不存在")
-		}
-
-		newToken, err := token.GenerateToken(user.ID)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("刷新 token 失败")
-		}
-
-		resp := &RefreshOutput{}
-		resp.Body.Message = "刷新成功"
-		resp.Body.Token = newToken
-		return resp, nil
-	})
+	}, handleRefreshTokenLogic)
 
 	// 修改密码接口
 	huma.Register(api, huma.Operation{
@@ -132,39 +33,5 @@ func RegisterAuthRoutes(api huma.API) {
 		Path:        "/auth/change-password",
 		Summary:     "修改密码",
 		Tags:        []string{"公共"},
-	}, func(ctx context.Context, i *ChangePasswordInput) (*ChangePasswordOutput, error) {
-		authHeader := i.Auth
-		if !strings.HasPrefix(authHeader, "Bearer ") {
-			return nil, huma.Error400BadRequest("无效的授权格式")
-		}
-		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-
-		claims, err := token.ValidateToken(tokenStr)
-		if err != nil {
-			return nil, huma.Error401Unauthorized("无效的 token")
-		}
-
-		database := db.GetDB()
-		var user models.User
-		if err := database.First(&user, claims.UserID).Error; err != nil {
-			return nil, huma.Error401Unauthorized("用户不存在")
-		}
-
-		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(i.Body.OldPassword)); err != nil {
-			return nil, huma.Error401Unauthorized("旧密码错误")
-		}
-
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(i.Body.NewPassword), bcrypt.DefaultCost)
-		if err != nil {
-			return nil, huma.Error500InternalServerError("生成新密码哈希失败")
-		}
-
-		if err := database.Model(&user).Update("password", string(hashedPassword)).Error; err != nil {
-			return nil, huma.Error500InternalServerError("更新密码失败")
-		}
-
-		resp := &ChangePasswordOutput{}
-		resp.Body.Message = "修改密码成功"
-		return resp, nil
-	})
+	}, handleChangePasswordLogic)
 }
