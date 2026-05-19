@@ -9,6 +9,7 @@ import (
 )
 
 type createInput struct {
+	Auth string `header:"Authorization" required:"true"`
 	Body struct {
 		Name string `json:"name" minLength:"1" maxLength:"32" doc:"名称"`
 	}
