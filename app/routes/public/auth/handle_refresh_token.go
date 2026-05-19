@@ -43,7 +43,7 @@ func handleRefreshTokenLogic(ctx context.Context, i *refreshInput) (*refreshOutp
 		return nil, huma.Error401Unauthorized("用户不存在")
 	}
 
-	newToken, err := token.GenerateToken(user.ID)
+	newToken, err := token.GenerateToken(user.ID, user.Username, user.Email, user.IsAdmin)
 	if err != nil {
 		return nil, huma.Error500InternalServerError("刷新 token 失败")
 	}

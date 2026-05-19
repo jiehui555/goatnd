@@ -38,7 +38,7 @@ func handlerLoginLogic(ctx context.Context, i *loginInput) (*loginOutput, error)
 		return nil, huma.Error401Unauthorized("用户不存在或密码错误")
 	}
 
-	t, err := token.GenerateToken(user.ID)
+	t, err := token.GenerateToken(user.ID, user.Username, user.Email, user.IsAdmin)
 	if err != nil {
 		return nil, huma.Error500InternalServerError("生成 token 失败")
 	}
