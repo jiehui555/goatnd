@@ -12,6 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// LoginInput 登录请求输入
 type LoginInput struct {
 	Body struct {
 		Email    string `json:"email" minLength:"1" doc:"邮箱"`
@@ -19,6 +20,7 @@ type LoginInput struct {
 	}
 }
 
+// LoginOutput 登录响应输出
 type LoginOutput struct {
 	Body struct {
 		Message string `json:"message" example:"OK" doc:"提示信息"`
@@ -26,10 +28,12 @@ type LoginOutput struct {
 	}
 }
 
+// RefreshInput 刷新 Token 请求输入
 type RefreshInput struct {
 	Auth string `header:"Authorization" required:"true"`
 }
 
+// RefreshOutput 刷新 Token 响应输出
 type RefreshOutput struct {
 	Body struct {
 		Message string `json:"message" example:"OK" doc:"提示信息"`
@@ -37,7 +41,25 @@ type RefreshOutput struct {
 	}
 }
 
+// ChangePasswordInput 修改密码请求输入
+type ChangePasswordInput struct {
+	Auth string `header:"Authorization" required:"true"`
+	Body struct {
+		OldPassword string `json:"old_password" minLength:"1" doc:"旧密码"`
+		NewPassword string `json:"new_password" minLength:"8" maxLength:"32" doc:"新密码"`
+	}
+}
+
+// ChangePasswordOutput 修改密码响应输出
+type ChangePasswordOutput struct {
+	Body struct {
+		Message string `json:"message" example:"OK" doc:"提示信息"`
+	}
+}
+
+// RegisterAuthRoutes 注册认证相关的公共路由
 func RegisterAuthRoutes(api huma.API) {
+	// 登录接口
 	huma.Register(api, huma.Operation{
 		OperationID: "auth-login",
 		Method:      http.MethodPost,
@@ -66,6 +88,7 @@ func RegisterAuthRoutes(api huma.API) {
 		return resp, nil
 	})
 
+	// 刷新 Token 接口
 	huma.Register(api, huma.Operation{
 		OperationID: "auth-refresh",
 		Method:      http.MethodPost,
@@ -99,6 +122,49 @@ func RegisterAuthRoutes(api huma.API) {
 		resp := &RefreshOutput{}
 		resp.Body.Message = "刷新成功"
 		resp.Body.Token = newToken
+		return resp, nil
+	})
+
+	// 修改密码接口
+	huma.Register(api, huma.Operation{
+		OperationID: "auth-change-password",
+		Method:      http.MethodPost,
+		Path:        "/auth/change-password",
+		Summary:     "修改密码",
+		Tags:        []string{"公共"},
+	}, func(ctx context.Context, i *ChangePasswordInput) (*ChangePasswordOutput, error) {
+		authHeader := i.Auth
+		if !strings.HasPrefix(authHeader, "Bearer ") {
+			return nil, huma.Error400BadRequest("无效的授权格式")
+		}
+		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+
+		claims, err := token.ValidateToken(tokenStr)
+		if err != nil {
+			return nil, huma.Error401Unauthorized("无效的 token")
+		}
+
+		database := db.GetDB()
+		var user models.User
+		if err := database.First(&user, claims.UserID).Error; err != nil {
+			return nil, huma.Error401Unauthorized("用户不存在")
+		}
+
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(i.Body.OldPassword)); err != nil {
+			return nil, huma.Error401Unauthorized("旧密码错误")
+		}
+
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(i.Body.NewPassword), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, huma.Error500InternalServerError("生成新密码哈希失败")
+		}
+
+		if err := database.Model(&user).Update("password", string(hashedPassword)).Error; err != nil {
+			return nil, huma.Error500InternalServerError("更新密码失败")
+		}
+
+		resp := &ChangePasswordOutput{}
+		resp.Body.Message = "修改密码成功"
 		return resp, nil
 	})
 }
